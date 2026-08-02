@@ -1,0 +1,107 @@
+/* base.css — variáveis, reset, elementos base, utilitários e acessibilidade */
+
+:root {
+  --bg: #F5F8F1;
+  --bg-deep: #E3F3E5;
+  --card: #FFFFFF;
+  --forest: #0F5C39;
+  --forest-2: #0B4A2E;
+  --leaf: #1F9D55;
+  --leaf-bright: #3FC96B;
+  --moss: #2E7D4F;
+  --lime-pop: #7ED957;
+  --aqua: #12A594;
+  --citrus: #E2883A;
+  --ink: #16241C;
+  --ink-soft: #43574B;
+  --line: #CFE6D4;
+  --limao: #7CB342;
+  --morango: #D1495B;
+  --suco-top: #F7DE7E;
+  --suco-base: #E8AE2E;
+  --seed: #2B1B0E;
+  --serif: 'Fraunces', serif;
+  --sans: 'Manrope', sans-serif;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+a { color:inherit; text-decoration:none; }
+img { max-width:100%; display:block; }
+ul { list-style:none; }
+
+.wrap {
+  max-width:1160px;
+  margin:0 auto;
+  padding:0 32px;
+}
+
+/* --- reveal on scroll --- */
+.reveal {
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.in {
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* --- acessibilidade --- */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline:2px solid var(--forest);
+  outline-offset:3px;
+  border-radius:4px;
+}
+
+/* pular direto para o conteúdo (leitores de tela / teclado) */
+.skip-link {
+  position:absolute;
+  left:12px;
+  top:-48px;
+  z-index:100;
+  background:var(--forest);
+  color:#fff;
+  padding:10px 16px;
+  border-radius:0 0 10px 10px;
+  font-weight:700;
+  font-size:.9rem;
+  transition:top .2s ease;
+}
+.skip-link:focus {
+  top:0;
+}
+
+/* esconde visualmente mas mantém para leitores de tela */
+.visually-hidden {
+  position:absolute !important;
+  width:1px; height:1px;
+  padding:0; margin:-1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* respeita quem prefere menos movimento */
+@media (prefers-reduced-motion:reduce) {
+  * {
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}

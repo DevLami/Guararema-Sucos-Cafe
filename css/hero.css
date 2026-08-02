@@ -1,0 +1,140 @@
+/* hero.css — hero, copo interativo, sementes, bolhas */
+
+.hero-scroll {
+  position:relative;
+  height:230vh;
+}
+.hero-sticky {
+  position:sticky;
+  top:0;
+  height:100vh;
+  min-height:560px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  padding:96px 0 64px;
+}
+.hero-grid {
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  gap:40px;
+  align-items:center;
+  width:100%;
+}
+.eyebrow {
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  font-size:.78rem;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--leaf);
+  margin-bottom:22px;
+}
+.eyebrow::before {
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--citrus);
+}
+h1 {
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(2.3rem,4.2vw,3.6rem);
+  line-height:1.05;
+  color:var(--forest);
+  letter-spacing:-.01em;
+}
+h1 em {
+  font-style:italic;
+  font-weight:500;
+  color:var(--morango);
+}
+.hero-sub {
+  margin-top:22px;
+  max-width:440px;
+  font-size:1.07rem;
+  color:var(--ink-soft);
+}
+.hero-actions {
+  display:flex;
+  gap:16px;
+  margin:40px 0 8px;
+  flex-wrap:wrap;
+}
+.scroll-cue {
+  margin-top:46px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:.82rem;
+  color:var(--ink-soft);
+  opacity:1;
+  transition:opacity .4s ease;
+}
+.scroll-cue.hide { opacity:0; }
+.scroll-cue svg {
+  width:16px;
+  height:16px;
+  animation:bob 1.6s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(5px); }
+}
+
+/* palco do copo */
+.cup-stage {
+  position:relative;
+  display:flex;
+  justify-content:center;
+  padding-top:10%;
+  min-height:340px;
+}
+.cup-svg {
+  width:min(320px,78vw);
+  height:auto;
+  overflow:visible;
+}
+.seed-float {
+  animation:seedDrift 3.6s ease-in-out infinite;
+  transform-box:fill-box;
+  transform-origin:center;
+}
+@keyframes seedDrift {
+  0%,100% { transform:translate(0,0) rotate(0); }
+  50% { transform:translate(1.5px,-3px) rotate(6deg); }
+}
+.bubble {
+  fill:rgba(255,250,225,.75);
+  animation:bubbleRise 3.2s linear infinite;
+}
+@keyframes bubbleRise {
+  0% { transform:translateY(460px); opacity:0; }
+  8% { opacity:.8; }
+  85% { opacity:.5; }
+  100% { transform:translateY(140px); opacity:0; }
+}
+
+/* pausa as animações do copo quando ele sai da tela (economia de CPU) */
+.anim-paused .seed-float,
+.anim-paused .bubble {
+  animation-play-state:paused;
+}
+
+.fill-readout {
+  position:absolute;
+  bottom:2%;
+  left:50%;
+  transform:translateX(-50%);
+  font-family:var(--serif);
+  font-style:italic;
+  color:var(--morango);
+  font-size:.95rem;
+  background:var(--card);
+  padding:6px 16px;
+  border-radius:100px;
+  box-shadow:0 10px 22px -12px rgba(20,40,30,.35);
+}

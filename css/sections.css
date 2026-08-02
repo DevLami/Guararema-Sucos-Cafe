@@ -1,0 +1,202 @@
+/* sections.css — loja, parallax, como pedir, valores e CTA final */
+
+.scallop {
+  height:26px;
+  width:100%;
+  background:radial-gradient(circle at 13px 0,transparent 13px,var(--bg-deep) 14px) top/26px 26px repeat-x;
+}
+
+/* loja */
+.loja {
+  background:var(--bg-deep);
+  padding:0 0 60px;
+}
+.loja-media {
+  width:100%;
+  overflow:hidden;
+}
+.loja-media img {
+  width:100%;
+  height:auto;
+  max-height:70vh;
+  object-fit:cover;
+}
+.loja-caption {
+  text-align:center;
+  padding-top:40px;
+  max-width:560px;
+}
+.loja-caption .eyebrow { justify-content:center; }
+.loja-caption h2,
+.como-head h2 {
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(1.6rem,2.6vw,2.1rem);
+  color:var(--forest);
+}
+.loja-caption p,
+.como-head p {
+  margin-top:12px;
+  color:var(--ink-soft);
+  font-size:1rem;
+}
+.loja-caption .btn { margin-top:22px; }
+
+/* parallax natureza */
+.parallax-nature {
+  position:relative;
+  height:64vh;
+  min-height:420px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.parallax-bg {
+  position:absolute;
+  inset:-15% -6%;
+  /* fallback WebP, com AVIF/WebP servidos via image-set para quem suporta */
+  background:url("../imagens/natureza.webp") center 40%/cover;
+  background-image:
+    image-set(
+      url("../imagens/natureza.avif") type("image/avif"),
+      url("../imagens/natureza.webp") type("image/webp")
+    );
+  background-position:center 40%;
+  background-size:cover;
+  will-change:transform;
+}
+.parallax-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(11,74,46,.16),rgba(11,74,46,.34) 55%,rgba(11,74,46,.5));
+}
+.parallax-content {
+  position:relative;
+  z-index:2;
+  max-width:640px;
+  padding:0 28px;
+  color:#F4FAF1;
+}
+.parallax-content .eyebrow {
+  color:var(--lime-pop);
+  justify-content:center;
+}
+.parallax-content .eyebrow::before { background:var(--aqua); }
+.parallax-content h2 {
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(1.9rem,4.2vw,2.9rem);
+  line-height:1.16;
+  text-shadow:0 2px 18px rgba(0,0,0,.5);
+}
+.parallax-content p {
+  margin:16px auto 0;
+  color:#F2FAF3;
+  font-size:1.05rem;
+  max-width:480px;
+  text-shadow:0 2px 14px rgba(0,0,0,.5);
+}
+
+/* como pedir */
+.como { padding:96px 0; }
+.como-head {
+  max-width:560px;
+  margin-bottom:56px;
+}
+.como-head h2 { font-size:clamp(1.9rem,3vw,2.5rem); }
+.como-head p { margin-top:14px; font-size:1.02rem; }
+.steps {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:45px;
+}
+.step {
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:32px 28px;
+  position:relative;
+}
+.step-num {
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:2.6rem;
+  color:var(--limao);
+  line-height:1;
+  margin-bottom:18px;
+}
+.step h3 {
+  font-size:1.08rem;
+  font-weight:800;
+  color:var(--forest);
+  margin-bottom:8px;
+}
+.step p {
+  font-size:.92rem;
+  color:var(--ink-soft);
+}
+.step:not(:last-child)::after {
+  content:"";
+  position:absolute;
+  right:-28px;
+  top:50%;
+  width:16px;
+  height:16px;
+  border-top:2px solid var(--line);
+  border-right:2px solid var(--line);
+  transform:translateY(-50%) rotate(45deg);
+}
+
+/* valores */
+.valores {
+  background:var(--bg-deep);
+  padding:70px 0;
+}
+.valores-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:30px;
+}
+.valor svg {
+  width:30px;
+  height:30px;
+  color:var(--leaf);
+  margin-bottom:14px;
+}
+.valor h3 {
+  font-size:1rem;
+  font-weight:800;
+  color:var(--forest);
+  margin-bottom:6px;
+}
+.valor p {
+  font-size:.88rem;
+  color:var(--ink-soft);
+}
+
+/* CTA final */
+.cta-final {
+  padding:110px 0;
+  text-align:center;
+}
+.cta-final h2 {
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(2.1rem,4vw,3.1rem);
+  color:var(--forest);
+  max-width:640px;
+  margin:auto;
+  line-height:1.12;
+}
+.cta-final h2 em {
+  color:var(--leaf);
+  font-style:italic;
+}
+.cta-final p {
+  margin:18px auto 34px;
+  color:var(--ink-soft);
+  font-size:1.05rem;
+  max-width:460px;
+}
