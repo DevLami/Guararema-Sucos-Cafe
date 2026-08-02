@@ -1,7 +1,28 @@
 // menu.js — cardápio interativo, alimentado por dados/cardapio.json.
-// Padrão ARIA de abas (tablist), navegação por teclado, filtro e animação de entrada.
+// Padrão ARIA de abas (tablist), navegação por teclado, filtro, animação e "Adicionar".
+
+import { cart, parsePrice } from './cart.js';
 
 const DATA_SRC = 'dados/cardapio.json';
+
+// mapa id -> { id, name, price } para o carrinho localizar o item ao clicar
+const itemsById = new Map();
+
+// Gera um id estável e um preço numérico para cada item (sem exigir isso no JSON).
+function prepareData(menu) {
+  itemsById.clear();
+  for (const cat of menu) {
+    let i = 0;
+    const lists = cat.groups ? cat.groups.map((g) => g.items) : [cat.items];
+    for (const list of lists) {
+      for (const item of list) {
+        item.id = `${cat.key}-${i++}`;
+        item.pv = parsePrice(item.p);
+        itemsById.set(item.id, { id: item.id, name: item.n, price: item.pv });
+      }
+    }
+  }
+}
 
 /* ---------- helpers de texto/filtro ---------- */
 
@@ -41,6 +62,7 @@ function itemHTML(item, i) {
             <span class="menu-item-name">${item.n}</span> ${badge}
             <span class="menu-item-leader"></span>
             <span class="menu-item-price">${item.p}</span>
+            <button type="button" class="menu-add" data-id="${item.id}" aria-label="Adicionar ${item.n} ao pedido">Adicionar</button>
             ${desc}
           </div>`;
 }
@@ -91,6 +113,7 @@ export async function initMenu() {
     return;
   }
 
+  prepareData(MENU);
   const state = { key: MENU[0].key, query: '' };
 
   /* --- render do painel --- */
@@ -163,6 +186,18 @@ export async function initMenu() {
   });
   tabsEl.addEventListener('keydown', onTabsKeydown);
   if (filterEl) filterEl.addEventListener('input', onFilterInput);
+
+  /* --- adicionar ao carrinho --- */
+  listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.menu-add');
+    if (!btn) return;
+    const item = itemsById.get(btn.dataset.id);
+    if (!item) return;
+    cart.add(item);
+    btn.classList.add('added');
+    btn.textContent = 'Adicionado ✓';
+    setTimeout(() => { btn.classList.remove('added'); btn.textContent = 'Adicionar'; }, 1100);
+  });
 
   buildTabs();
   renderPanel({ animate: true });

@@ -47,6 +47,7 @@
 <link rel="stylesheet" href="css/menu.css">
 <link rel="stylesheet" href="css/sections.css">
 <link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/cart.css">
 
 <!-- Dados estruturados (Schema.org) -->
 <script type="application/ld+json">
@@ -247,6 +248,75 @@
     </div>
   </div>
 </footer>
+
+<!-- ================= CARRINHO ================= -->
+<button class="cart-fab" id="cartFab" type="button" aria-label="Abrir meu pedido" aria-controls="cartDrawer">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.4 12.2a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L22 7H6"/></svg>
+  <span class="cart-count" id="cartCount" hidden>0</span>
+</button>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Seu pedido" aria-hidden="true">
+  <div class="cart-drawer-head">
+    <strong>Seu pedido</strong>
+    <button class="cart-close" id="cartClose" type="button" aria-label="Fechar">✕</button>
+  </div>
+
+  <!-- TELA 1: carrinho -->
+  <div class="cart-body" id="cartView">
+    <p class="cart-empty" id="cartEmpty" hidden>Seu carrinho está vazio. Adicione itens do cardápio. 🥤</p>
+    <ul class="cart-list" id="cartItems"></ul>
+    <div class="cart-subtotal-row">
+      <span>Subtotal</span>
+      <strong id="cartSubtotal">R$ 0,00</strong>
+    </div>
+    <button class="btn btn-primary cart-cta" id="toCheckout" type="button" disabled>Finalizar pedido</button>
+  </div>
+
+  <!-- TELA 2: formulário -->
+  <div class="cart-body" id="checkoutView" hidden>
+    <button class="cart-back" id="backToCart" type="button">← Voltar ao carrinho</button>
+
+    <label class="ck-field">
+      <span>Nome</span>
+      <input type="text" id="ckNome" autocomplete="name" placeholder="Seu nome">
+    </label>
+
+    <label class="ck-field">
+      <span>Telefone</span>
+      <input type="tel" id="ckTelefone" autocomplete="tel" inputmode="tel" placeholder="(11) 99999-9999">
+    </label>
+
+    <fieldset class="ck-field ck-radios">
+      <legend>Como deseja receber?</legend>
+      <label class="ck-radio"><input type="radio" name="tipo" value="local"> Consumir no local</label>
+      <label class="ck-radio"><input type="radio" name="tipo" value="retirar"> Retirar na loja</label>
+      <label class="ck-radio"><input type="radio" name="tipo" value="entrega"> Entrega</label>
+    </fieldset>
+
+    <div class="ck-delivery" id="deliveryFields" hidden>
+      <label class="ck-field"><span>Rua</span><input type="text" id="ckRua" autocomplete="address-line1" placeholder="Nome da rua"></label>
+      <label class="ck-field"><span>Número</span><input type="text" id="ckNumero" inputmode="numeric" placeholder="Nº"></label>
+      <label class="ck-field"><span>Bairro</span><input type="text" id="ckBairro" placeholder="Bairro"></label>
+      <button class="btn btn-ghost ck-verify" id="verifyDelivery" type="button">📍 Confirmar minha localização</button>
+      <p class="delivery-status" id="deliveryStatus" role="status" aria-live="polite"></p>
+      <p class="ck-hint">Entrega apenas num raio de 1&nbsp;km. Confirme sua localização com o aparelho no endereço da entrega — o navegador vai pedir permissão de acesso.</p>
+    </div>
+
+    <p class="ck-error" id="ckError" role="alert" hidden></p>
+    <button class="btn btn-primary cart-cta" id="placeOrder" type="button">Finalizar pedido</button>
+  </div>
+
+  <!-- TELA 3: confirmação -->
+  <div class="cart-body order-done" id="orderDone" hidden>
+    <div class="order-done-check" aria-hidden="true">✓</div>
+    <h3>Pedido montado!</h3>
+    <div class="order-summary" id="orderSummary"></div>
+    <p class="ck-hint">O envio pelo WhatsApp será configurado na próxima etapa.</p>
+    <button class="btn btn-primary cart-cta" id="newOrder" type="button">Fazer outro pedido</button>
+  </div>
+</aside>
 
 <button class="back-to-top" id="backToTop" type="button" aria-label="Voltar ao topo">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7"/></svg>

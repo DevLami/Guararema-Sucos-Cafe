@@ -6,9 +6,11 @@ import { initParallax } from './parallax.js';
 import { initHero } from './hero.js';
 import { initMenu } from './menu.js';
 import { initBackToTop } from './backToTop.js';
+import { initCheckout } from './checkout.js';
 
 initAnimations();
 initParallax();
 initHero();
 initMenu();
 initBackToTop();
+initCheckout();
