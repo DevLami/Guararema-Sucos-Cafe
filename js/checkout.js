@@ -11,7 +11,7 @@ import { cart, formatBRL } from './cart.js';
 const STORE = {
   lat: -23.412607,   // Guararema Sucos e Café
   lng: -46.035831,
-  radiusKm: 1,      // raio de entrega em km
+  radiusKm: 0.4,    // raio de entrega em km (400 m)
   city: 'Guararema',
   state: 'SP',
 };
@@ -51,6 +51,11 @@ function distanceKm(a, b) {
   return 2 * R * Math.asin(Math.sqrt(s));
 }
 
+// Formata distância: metros abaixo de 1 km, senão km.
+function fmtDist(km) {
+  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+}
+
 /* ---------- validações de campo ---------- */
 
 function digits(str) {
@@ -85,6 +90,8 @@ export function initCheckout() {
   const ckError = el('ckError');
 
   let deliveryOk = false;     // entrega verificada e dentro do raio?
+  let deliveryCoords = null;  // {lat,lng} confirmados por GPS
+  let deliveryDistKm = 0;
   let lastFocused = null;
 
   /* --- render do carrinho --- */
@@ -156,6 +163,8 @@ export function initCheckout() {
   }
   function resetDelivery() {
     deliveryOk = false;
+    deliveryCoords = null;
+    deliveryDistKm = 0;
     if (deliveryStatus) { deliveryStatus.textContent = ''; deliveryStatus.className = 'delivery-status'; }
   }
   function onTipoChange() {
@@ -176,11 +185,14 @@ export function initCheckout() {
       const dist = distanceKm(STORE, point);
       if (dist <= STORE.radiusKm) {
         deliveryOk = true;
-        setStatus(`Você está na área de entrega ✓ (aprox. ${Math.round(dist * 1000)} m da loja)`, 'ok');
+        deliveryCoords = point;
+        deliveryDistKm = dist;
+        setStatus(`Você está na área de entrega ✓ (aprox. ${fmtDist(dist)} da loja)`, 'ok');
       } else {
         deliveryOk = false;
-        setStatus(`Fora da área de entrega — aprox. ${dist.toFixed(1)} km. `
-          + `Entregamos até ${STORE.radiusKm} km. Você pode retirar na loja. 🙏`, 'warn');
+        deliveryCoords = null;
+        setStatus(`Você está a aprox. ${fmtDist(dist)} da loja, fora da nossa área de entrega `
+          + `(até ${fmtDist(STORE.radiusKm)}). Você pode retirar na loja. 🙏`, 'warn');
       }
     } catch (err) {
       console.error(err);
@@ -206,11 +218,12 @@ export function initCheckout() {
       telefone: el('ckTelefone').value.trim(),
       tipo: selectedTipo(),
     };
-    if (order.tipo === 'entrega') {
-      order.endereco = {
-        rua: el('ckRua').value.trim(),
-        numero: el('ckNumero').value.trim(),
-        bairro: el('ckBairro').value.trim(),
+    if (order.tipo === 'entrega' && deliveryCoords) {
+      order.local = {
+        lat: deliveryCoords.lat,
+        lng: deliveryCoords.lng,
+        distanciaM: Math.round(deliveryDistKm * 1000),
+        mapa: `https://www.google.com/maps?q=${deliveryCoords.lat},${deliveryCoords.lng}`,
       };
     }
     return order;
@@ -222,12 +235,8 @@ export function initCheckout() {
     if (!phoneValid(el('ckTelefone').value)) return 'Informe um telefone válido com DDD.';
     const tipo = selectedTipo();
     if (!tipo) return 'Escolha como deseja receber.';
-    if (tipo === 'entrega') {
-      const { rua, numero, bairro } = {
-        rua: el('ckRua').value.trim(), numero: el('ckNumero').value.trim(), bairro: el('ckBairro').value.trim(),
-      };
-      if (!rua || !numero || !bairro) return 'Preencha o endereço de entrega.';
-      if (!deliveryOk) return 'Verifique a disponibilidade de entrega antes de finalizar.';
+    if (tipo === 'entrega' && !deliveryOk) {
+      return 'Confirme sua localização para a entrega.';
     }
     return null;
   }
@@ -247,8 +256,9 @@ export function initCheckout() {
   function showOrderDone(order) {
     const tipoLabel = { local: 'Consumir no local', retirar: 'Retirar na loja', entrega: 'Entrega' }[order.tipo];
     const linhas = order.items.map((i) => `${i.qty}× ${i.name} — ${formatBRL(i.price * i.qty)}`).join('<br>');
-    const end = order.endereco
-      ? `<br><strong>Endereço:</strong> ${order.endereco.rua}, ${order.endereco.numero} — ${order.endereco.bairro}` : '';
+    const end = order.local
+      ? `<br><strong>Entrega:</strong> localização confirmada (aprox. ${order.local.distanciaM} m da loja)`
+      : '';
     el('orderSummary').innerHTML = `
       ${linhas}<br><strong>Total: ${formatBRL(order.total)}</strong><br><br>
       <strong>Nome:</strong> ${order.nome}<br>

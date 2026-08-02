@@ -296,12 +296,10 @@
     </fieldset>
 
     <div class="ck-delivery" id="deliveryFields" hidden>
-      <label class="ck-field"><span>Rua</span><input type="text" id="ckRua" autocomplete="address-line1" placeholder="Nome da rua"></label>
-      <label class="ck-field"><span>Número</span><input type="text" id="ckNumero" inputmode="numeric" placeholder="Nº"></label>
-      <label class="ck-field"><span>Bairro</span><input type="text" id="ckBairro" placeholder="Bairro"></label>
+      <p class="ck-delivery-note">Como entregamos o pedido pessoalmente, por enquanto só atendemos endereços pertinho da loja (raio de 400&nbsp;m). Confirme sua localização para ver se você está na área.</p>
       <button class="btn btn-ghost ck-verify" id="verifyDelivery" type="button">📍 Confirmar minha localização</button>
       <p class="delivery-status" id="deliveryStatus" role="status" aria-live="polite"></p>
-      <p class="ck-hint">Entrega apenas num raio de 1&nbsp;km. Confirme sua localização com o aparelho no endereço da entrega — o navegador vai pedir permissão de acesso.</p>
+      <p class="ck-hint">O navegador vai pedir permissão de acesso à localização — faça isso no endereço onde vai receber. Se não permitir, não conseguimos validar a entrega.</p>
     </div>
 
     <p class="ck-error" id="ckError" role="alert" hidden></p>
