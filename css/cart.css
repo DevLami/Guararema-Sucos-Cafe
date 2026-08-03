@@ -193,6 +193,24 @@
 .cart-cta { width: 100%; justify-content: center; margin-top: 12px; }
 .cart-cta:disabled { opacity: .5; cursor: not-allowed; }
 
+/* --- limpar carrinho --- */
+.cart-clear {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: color .18s ease, background .18s ease;
+}
+.cart-clear:hover { color: var(--morango); background: rgba(209,73,91,.08); }
+
 /* --- formulário --- */
 .cart-back {
   border: 0;
@@ -224,6 +242,24 @@
   border-radius: 12px;
   background: var(--card);
 }
+.ck-field textarea {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: .95rem;
+  color: var(--ink);
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.5;
+}
+.ck-field input::placeholder,
+.ck-field textarea::placeholder {
+  color: var(--ink-soft);
+  opacity: .6;
+}
 .ck-radios { border: 0; padding: 0; }
 .ck-radio {
   display: flex;
@@ -242,6 +278,55 @@
   background: var(--bg-deep);
 }
 .ck-radio input { accent-color: var(--forest); width: 18px; height: 18px; }
+
+/* --- tempo de chegada (local / retirar) --- */
+.ck-chegada {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+.ck-chegada-q {
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--forest-2);
+  margin-bottom: 12px;
+}
+.ck-chegada-opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ck-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 100px;
+  background: var(--bg);
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--forest-2);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
+}
+.ck-chip:has(input:checked) {
+  border-color: var(--leaf);
+  background: var(--leaf);
+  color: #fff;
+}
+.ck-chip input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
 
 .ck-delivery {
   padding: 16px;

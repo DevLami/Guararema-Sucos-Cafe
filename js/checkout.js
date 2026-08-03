@@ -28,6 +28,14 @@ const TIPO_LABEL = {
   entrega: 'Entrega',
 };
 
+// Tempo de chegada (só para consumir no local / retirar na loja).
+const CHEGADA_LABEL = {
+  '5': 'Chega em ~5 min',
+  '10': 'Chega em ~10 min',
+  '20': 'Chega em ~20 min',
+  agora: 'Preparar agora',
+};
+
 const PAGAMENTO_LABEL = {
   dinheiro: 'Dinheiro',
   pix: 'Pix',
@@ -58,6 +66,9 @@ function buildWhatsappText(order) {
   L.push(`*Nome:* ${order.nome}`);
   L.push(`*Telefone:* ${order.telefone}`);
   L.push(`*Como receber:* ${TIPO_LABEL[order.tipo]}`);
+  if (order.chegada) {
+    L.push(`*Tempo de chegada:* ${CHEGADA_LABEL[order.chegada]}`);
+  }
   if (order.local) {
     L.push(`*Localização:* ${order.local.mapa} (aprox. ${order.local.distanciaM} m da loja)`);
   }
@@ -66,6 +77,10 @@ function buildWhatsappText(order) {
     L.push(order.troco.precisa
       ? `*Troco para:* ${formatBRL(order.troco.para)} (levar ${formatBRL(order.troco.valor)} de troco)`
       : '*Troco:* não precisa');
+  }
+  if (order.obs) {
+    L.push('');
+    L.push(`*Observações:* ${order.obs}`);
   }
   return L.join('\n');
 }
@@ -132,6 +147,21 @@ function phoneValid(str) {
   return d.length === 10 || d.length === 11; // fixo ou celular com DDD
 }
 
+// Formata o telefone enquanto a pessoa digita: (11) 92345-6789.
+// Celular (11 dígitos ou começando com 9): hífen após o 5º número.
+// Fixo (10 dígitos): hífen após o 4º número.
+function maskPhone(value) {
+  const d = digits(value).slice(0, 11);
+  if (!d) return '';
+  const ddd = d.slice(0, 2);
+  if (d.length <= 2) return `(${d}`;
+  const rest = d.slice(2);
+  const mobile = rest.length > 4 && (d.length === 11 || rest[0] === '9');
+  const cut = mobile ? 5 : 4;
+  if (rest.length <= cut) return `(${ddd}) ${rest}`;
+  return `(${ddd}) ${rest.slice(0, cut)}-${rest.slice(cut)}`;
+}
+
 /* ---------- componente ---------- */
 
 export function initCheckout() {
@@ -146,6 +176,8 @@ export function initCheckout() {
   const cartEmpty = el('cartEmpty');
   const cartSubtotal = el('cartSubtotal');
   const toCheckout = el('toCheckout');
+  const clearCart = el('clearCart');
+  const chegadaFields = el('chegadaFields');
   const cartView = el('cartView');
   const checkoutView = el('checkoutView');
   const orderDone = el('orderDone');
@@ -173,9 +205,11 @@ export function initCheckout() {
       cartItems.innerHTML = '';
       cartEmpty.hidden = false;
       toCheckout.disabled = true;
+      if (clearCart) clearCart.hidden = true;
     } else {
       cartEmpty.hidden = true;
       toCheckout.disabled = false;
+      if (clearCart) clearCart.hidden = false;
       cartItems.innerHTML = list.map((it) => `
         <li class="cart-row" data-id="${it.id}">
           <div class="cart-row-info">
@@ -232,6 +266,13 @@ export function initCheckout() {
     const r = drawer.querySelector('input[name="pagamento"]:checked');
     return r ? r.value : '';
   }
+  function selectedChegada() {
+    const r = drawer.querySelector('input[name="chegada"]:checked');
+    return r ? r.value : '';
+  }
+  function resetChegada() {
+    drawer.querySelectorAll('input[name="chegada"]').forEach((i) => { i.checked = false; });
+  }
   function resetDelivery() {
     deliveryOk = false;
     deliveryCoords = null;
@@ -239,9 +280,16 @@ export function initCheckout() {
     if (deliveryStatus) { deliveryStatus.textContent = ''; deliveryStatus.className = 'delivery-status'; }
   }
   function onTipoChange() {
-    const entrega = selectedTipo() === 'entrega';
+    const tipo = selectedTipo();
+    const entrega = tipo === 'entrega';
     deliveryFields.hidden = !entrega;
     resetDelivery();
+
+    // Tempo de chegada só faz sentido para consumir no local ou retirar.
+    const pedeChegada = tipo === 'local' || tipo === 'retirar';
+    if (chegadaFields) chegadaFields.hidden = !pedeChegada;
+    if (!pedeChegada) resetChegada();
+
     updateTroco();
   }
 
@@ -297,6 +345,9 @@ export function initCheckout() {
       telefone: el('ckTelefone').value.trim(),
       tipo: selectedTipo(),
     };
+    if (order.tipo === 'local' || order.tipo === 'retirar') {
+      order.chegada = selectedChegada();
+    }
     if (order.tipo === 'entrega' && deliveryCoords) {
       order.local = {
         lat: deliveryCoords.lat,
@@ -311,6 +362,7 @@ export function initCheckout() {
       if (para > 0) order.troco = { precisa: true, para, valor: Math.max(0, para - order.total) };
       else order.troco = { precisa: false };
     }
+    order.obs = el('ckObs') ? el('ckObs').value.trim() : '';
     return order;
   }
 
@@ -322,6 +374,9 @@ export function initCheckout() {
     if (!tipo) return 'Escolha como deseja receber.';
     if (tipo === 'entrega' && !deliveryOk) {
       return 'Confirme sua localização para a entrega.';
+    }
+    if ((tipo === 'local' || tipo === 'retirar') && !selectedChegada()) {
+      return 'Escolha em quanto tempo você chega.';
     }
     const pagamento = selectedPagamento();
     if (!pagamento) return 'Escolha a forma de pagamento.';
@@ -352,6 +407,9 @@ export function initCheckout() {
   function showOrderDone(order) {
     const tipoLabel = { local: 'Consumir no local', retirar: 'Retirar na loja', entrega: 'Entrega' }[order.tipo];
     const linhas = order.items.map((i) => `${i.qty}× ${i.name} — ${formatBRL(i.price * i.qty)}`).join('<br>');
+    const chegada = order.chegada
+      ? `<br><strong>Tempo de chegada:</strong> ${CHEGADA_LABEL[order.chegada]}`
+      : '';
     const end = order.local
       ? `<br><strong>Entrega:</strong> localização confirmada (aprox. ${order.local.distanciaM} m da loja)`
       : '';
@@ -361,11 +419,14 @@ export function initCheckout() {
         ? `<br><strong>Troco para:</strong> ${formatBRL(order.troco.para)} (levar ${formatBRL(order.troco.valor)})`
         : '<br><strong>Troco:</strong> não precisa';
     }
+    const obs = order.obs
+      ? `<br><strong>Observações:</strong> ${order.obs}`
+      : '';
     el('orderSummary').innerHTML = `
       ${linhas}<br><strong>Total: ${formatBRL(order.total)}</strong><br><br>
       <strong>Nome:</strong> ${order.nome}<br>
       <strong>Telefone:</strong> ${order.telefone}<br>
-      <strong>Receber:</strong> ${tipoLabel}${end}${pag}`;
+      <strong>Receber:</strong> ${tipoLabel}${chegada}${end}${pag}${obs}`;
     el('orderNo').textContent = order.dataHora ? `🕒 Pedido feito em ${order.dataHora}` : '';
     el('sendWhatsapp').href = whatsappUrl(order);
     cartView.hidden = true;
@@ -376,8 +437,9 @@ export function initCheckout() {
 
   function newOrder() {
     cart.clear();
-    drawer.querySelectorAll('input').forEach((i) => { if (i.type === 'radio') i.checked = false; else i.value = ''; });
+    drawer.querySelectorAll('input, textarea').forEach((i) => { if (i.type === 'radio') i.checked = false; else i.value = ''; });
     deliveryFields.hidden = true;
+    if (chegadaFields) chegadaFields.hidden = true;
     trocoFields.hidden = true;
     resetDelivery();
     ckError.hidden = true;
@@ -402,6 +464,14 @@ export function initCheckout() {
   el('cartClose').addEventListener('click', close);
   overlay.addEventListener('click', close);
   toCheckout.addEventListener('click', showCheckout);
+  const telInput = el('ckTelefone');
+  if (telInput) telInput.addEventListener('input', () => {
+    telInput.value = maskPhone(telInput.value);
+  });
+  if (clearCart) clearCart.addEventListener('click', () => {
+    cart.clear();
+    toCheckout.focus();
+  });
   el('backToCart').addEventListener('click', showCart);
   verifyBtn.addEventListener('click', verifyDelivery);
   placeOrder.addEventListener('click', onPlaceOrder);
