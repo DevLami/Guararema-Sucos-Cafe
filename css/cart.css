@@ -3,7 +3,7 @@
 /* --- botão "Adicionar" no item do menu --- */
 .menu-add {
   flex: none;
-  margin-left: 4px;
+  margin-left: auto;
   padding: 6px 14px;
   border-radius: 100px;
   border: 1.5px solid var(--leaf);

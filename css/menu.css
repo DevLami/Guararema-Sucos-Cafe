@@ -179,6 +179,39 @@
   letter-spacing:.04em;
 }
 
+/* botão "Finalizar pedido" abaixo do cardápio */
+.menu-finish {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:fit-content;
+  max-width:100%;
+  margin:22px auto 0;
+  padding:14px 30px;
+  font-size:1rem;
+  background:var(--citrus);
+  color:#fff;
+}
+.menu-finish:hover {
+  background:var(--citrus);
+  filter:brightness(.94);
+}
+.menu-finish svg { width:20px; height:20px; }
+.menu-finish-count {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:22px;
+  height:22px;
+  padding:0 7px;
+  border-radius:100px;
+  background:var(--citrus);
+  color:#fff;
+  font-size:.78rem;
+  font-weight:800;
+}
+
 /* entrada animada dos itens ao trocar de aba (escalonada) */
 .menu-list.animate .menu-item,
 .menu-list.animate .menu-group-title,

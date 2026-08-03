@@ -46,6 +46,12 @@
   .menu-item-desc { font-size:.78rem; }
   .menu-item-leader { min-width:10px; }
   .menu-group-title { font-size:1.05rem; }
+  .menu-add { padding:5px 12px; font-size:.74rem; }
+}
+
+@media (max-width:360px) {
+  .menu-item-name { font-size:.86rem; }
+  .menu-add { padding:5px 10px; font-size:.72rem; }
 }
 
 @media (max-width:420px) {

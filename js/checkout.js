@@ -177,6 +177,8 @@ export function initCheckout() {
   const cartSubtotal = el('cartSubtotal');
   const toCheckout = el('toCheckout');
   const clearCart = el('clearCart');
+  const menuFinish = el('menuFinish');
+  const menuFinishCount = el('menuFinishCount');
   const chegadaFields = el('chegadaFields');
   const cartView = el('cartView');
   const checkoutView = el('checkoutView');
@@ -200,6 +202,10 @@ export function initCheckout() {
     cartCount.textContent = String(count);
     fab.classList.toggle('has-items', count > 0);
     cartCount.hidden = count === 0;
+    if (menuFinishCount) {
+      menuFinishCount.textContent = String(count);
+      menuFinishCount.hidden = count === 0;
+    }
 
     if (cart.isEmpty()) {
       cartItems.innerHTML = '';
@@ -461,6 +467,7 @@ export function initCheckout() {
 
   /* --- ligações --- */
   fab.addEventListener('click', open);
+  if (menuFinish) menuFinish.addEventListener('click', open);
   el('cartClose').addEventListener('click', close);
   overlay.addEventListener('click', close);
   toCheckout.addEventListener('click', showCheckout);
