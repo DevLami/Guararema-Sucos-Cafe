@@ -212,6 +212,7 @@
   color: var(--forest-2);
   margin-bottom: 6px;
 }
+.req { color: var(--morango); font-weight: 800; }
 .ck-field input[type="text"],
 .ck-field input[type="tel"] {
   width: 100%;
@@ -250,6 +251,15 @@
   background: var(--card);
 }
 .ck-delivery .ck-field:last-of-type { margin-bottom: 12px; }
+.ck-troco {
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+.ck-troco .ck-radios:last-child,
+.ck-troco .ck-field:last-child { margin-bottom: 0; }
 .ck-delivery-note {
   font-size: .86rem;
   line-height: 1.5;
@@ -260,7 +270,7 @@
   margin-bottom: 14px;
 }
 .ck-verify { width: 100%; justify-content: center; }
-.ck-hint { font-size: .78rem; color: var(--ink-soft); font-style: italic; margin-top: 10px; }
+.ck-hint { display: block; font-size: .78rem; color: var(--ink-soft); font-style: italic; margin-top: 10px; }
 
 .delivery-status {
   font-size: .86rem;
@@ -308,6 +318,25 @@
   color: var(--forest);
   margin-bottom: 14px;
 }
+.order-done-sub {
+  font-size: .9rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.order-no {
+  display: inline-block;
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: .9rem;
+  color: var(--forest);
+  background: var(--bg-deep);
+  border-radius: 100px;
+  padding: 5px 16px;
+  margin-bottom: 14px;
+  letter-spacing: .02em;
+}
+.order-done-sub em { font-style: italic; color: var(--forest); }
 .order-summary {
   text-align: left;
   background: var(--card);

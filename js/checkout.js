@@ -1,7 +1,7 @@
 // checkout.js — gaveta do carrinho + formulário de finalização + validação de entrega.
 // A mensagem final do WhatsApp será montada na próxima etapa.
 
-import { cart, formatBRL } from './cart.js';
+import { cart, formatBRL, parsePrice } from './cart.js';
 
 /* ============================================================
    CONFIGURAÇÃO DA LOJA  —  PREENCHA AQUI
@@ -15,6 +15,72 @@ const STORE = {
   city: 'Guararema',
   state: 'SP',
 };
+
+// Número que RECEBE os pedidos (formato internacional, só dígitos).
+// >>> MODO TESTE: enviando para o número particular.
+//     Para publicar de verdade, comente a linha de teste e use a da loja.
+const WHATSAPP = '5511937197667';   // ← TESTE (particular)
+// const WHATSAPP = '5511933891053'; // ← LOJA (usar quando for ao ar)
+
+const TIPO_LABEL = {
+  local: 'Consumir no local',
+  retirar: 'Retirar na loja',
+  entrega: 'Entrega',
+};
+
+const PAGAMENTO_LABEL = {
+  dinheiro: 'Dinheiro',
+  pix: 'Pix',
+  cartao: 'Cartão de crédito ou débito',
+  vale: 'Vale alimentação ou refeição',
+};
+
+const PAG_LABEL = {
+  'dinheiro-pix': 'Dinheiro / Pix',
+  cartao: 'Cartão de crédito ou débito',
+  vale: 'Vale alimentação ou refeição',
+};
+
+/* ---------- mensagem do WhatsApp ---------- */
+
+// Monta o texto do pedido (WhatsApp aceita *negrito* e quebras de linha).
+function buildWhatsappText(order) {
+  const L = [];
+  L.push('*Novo pedido — Guararema Sucos e Café*');
+  if (order.dataHora) L.push(`*Data/hora:* ${order.dataHora}`);
+  L.push('');
+  for (const it of order.items) {
+    L.push(`• ${it.qty}× ${it.name} — ${formatBRL(it.price * it.qty)}`);
+  }
+  L.push('');
+  L.push(`*Total:* ${formatBRL(order.total)}`);
+  L.push('');
+  L.push(`*Nome:* ${order.nome}`);
+  L.push(`*Telefone:* ${order.telefone}`);
+  L.push(`*Como receber:* ${TIPO_LABEL[order.tipo]}`);
+  if (order.local) {
+    L.push(`*Localização:* ${order.local.mapa} (aprox. ${order.local.distanciaM} m da loja)`);
+  }
+  L.push(`*Pagamento:* ${PAGAMENTO_LABEL[order.pagamento]}`);
+  if (order.troco) {
+    L.push(order.troco.precisa
+      ? `*Troco para:* ${formatBRL(order.troco.para)} (levar ${formatBRL(order.troco.valor)} de troco)`
+      : '*Troco:* não precisa');
+  }
+  return L.join('\n');
+}
+
+function whatsappUrl(order) {
+  return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(buildWhatsappText(order))}`;
+}
+
+// Data e hora do pedido, no formato DD/MM/AAAA às HH:MM (horário do aparelho).
+function formatDateTime(d) {
+  const p = (n) => String(n).padStart(2, '0');
+  const data = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const hora = `${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${data} às ${hora}`;
+}
 
 /* ---------- localização (GPS) + distância ---------- */
 
@@ -86,6 +152,7 @@ export function initCheckout() {
   const deliveryFields = el('deliveryFields');
   const deliveryStatus = el('deliveryStatus');
   const verifyBtn = el('verifyDelivery');
+  const trocoFields = el('trocoFields');
   const placeOrder = el('placeOrder');
   const ckError = el('ckError');
 
@@ -161,6 +228,10 @@ export function initCheckout() {
     const r = drawer.querySelector('input[name="tipo"]:checked');
     return r ? r.value : '';
   }
+  function selectedPagamento() {
+    const r = drawer.querySelector('input[name="pagamento"]:checked');
+    return r ? r.value : '';
+  }
   function resetDelivery() {
     deliveryOk = false;
     deliveryCoords = null;
@@ -171,6 +242,14 @@ export function initCheckout() {
     const entrega = selectedTipo() === 'entrega';
     deliveryFields.hidden = !entrega;
     resetDelivery();
+    updateTroco();
+  }
+
+  // Troco só faz sentido em entrega + dinheiro.
+  function updateTroco() {
+    const show = selectedTipo() === 'entrega' && selectedPagamento() === 'dinheiro';
+    trocoFields.hidden = !show;
+    if (!show) el('ckTrocoPara').value = '';
   }
 
   async function verifyDelivery() {
@@ -226,6 +305,12 @@ export function initCheckout() {
         mapa: `https://www.google.com/maps?q=${deliveryCoords.lat},${deliveryCoords.lng}`,
       };
     }
+    order.pagamento = selectedPagamento();
+    if (order.tipo === 'entrega' && order.pagamento === 'dinheiro') {
+      const para = parsePrice(el('ckTrocoPara').value);
+      if (para > 0) order.troco = { precisa: true, para, valor: Math.max(0, para - order.total) };
+      else order.troco = { precisa: false };
+    }
     return order;
   }
 
@@ -238,6 +323,16 @@ export function initCheckout() {
     if (tipo === 'entrega' && !deliveryOk) {
       return 'Confirme sua localização para a entrega.';
     }
+    const pagamento = selectedPagamento();
+    if (!pagamento) return 'Escolha a forma de pagamento.';
+    if (tipo === 'entrega' && pagamento === 'dinheiro') {
+      const raw = el('ckTrocoPara').value.trim();
+      if (raw) {
+        const para = parsePrice(raw);
+        if (!para) return 'Informe um valor de troco válido.';
+        if (para < cart.total()) return `O valor para troco deve ser ao menos o total (${formatBRL(cart.total())}).`;
+      }
+    }
     return null;
   }
 
@@ -248,6 +343,7 @@ export function initCheckout() {
     if (problem) return;
 
     const order = buildOrder();
+    order.dataHora = formatDateTime(new Date());
     // Próxima etapa: transformar "order" na mensagem do WhatsApp.
     document.dispatchEvent(new CustomEvent('order:placed', { detail: order }));
     showOrderDone(order);
@@ -259,20 +355,30 @@ export function initCheckout() {
     const end = order.local
       ? `<br><strong>Entrega:</strong> localização confirmada (aprox. ${order.local.distanciaM} m da loja)`
       : '';
+    let pag = `<br><strong>Pagamento:</strong> ${PAGAMENTO_LABEL[order.pagamento]}`;
+    if (order.troco) {
+      pag += order.troco.precisa
+        ? `<br><strong>Troco para:</strong> ${formatBRL(order.troco.para)} (levar ${formatBRL(order.troco.valor)})`
+        : '<br><strong>Troco:</strong> não precisa';
+    }
     el('orderSummary').innerHTML = `
       ${linhas}<br><strong>Total: ${formatBRL(order.total)}</strong><br><br>
       <strong>Nome:</strong> ${order.nome}<br>
       <strong>Telefone:</strong> ${order.telefone}<br>
-      <strong>Receber:</strong> ${tipoLabel}${end}`;
+      <strong>Receber:</strong> ${tipoLabel}${end}${pag}`;
+    el('orderNo').textContent = order.dataHora ? `🕒 Pedido feito em ${order.dataHora}` : '';
+    el('sendWhatsapp').href = whatsappUrl(order);
     cartView.hidden = true;
     checkoutView.hidden = true;
     orderDone.hidden = false;
+    el('sendWhatsapp').focus();
   }
 
   function newOrder() {
     cart.clear();
     drawer.querySelectorAll('input').forEach((i) => { if (i.type === 'radio') i.checked = false; else i.value = ''; });
     deliveryFields.hidden = true;
+    trocoFields.hidden = true;
     resetDelivery();
     ckError.hidden = true;
     close();
@@ -300,7 +406,10 @@ export function initCheckout() {
   verifyBtn.addEventListener('click', verifyDelivery);
   placeOrder.addEventListener('click', onPlaceOrder);
   el('newOrder').addEventListener('click', newOrder);
-  drawer.addEventListener('change', (e) => { if (e.target.name === 'tipo') onTipoChange(); });
+  drawer.addEventListener('change', (e) => {
+    if (e.target.name === 'tipo') onTipoChange();
+    else if (e.target.name === 'pagamento') updateTroco();
+  });
   // steppers e remover
   cartItems.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-act]');
