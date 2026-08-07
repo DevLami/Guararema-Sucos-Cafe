@@ -45,7 +45,3 @@ funciona abrindo o arquivo direto (`file://`).
   (ou a extensão "Live Server" no VS Code)
 - **Online:** publicado via GitHub Pages.
 
-## Observação
-
-As URLs absolutas de SEO (canonical, Open Graph, Schema.org) em `index.html`
-apontam para o endereço do GitHub Pages. Se usar um domínio próprio, atualize-as.
